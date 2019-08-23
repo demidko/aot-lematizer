@@ -15,10 +15,16 @@ class LuceneChiefCooker {
 	private static final BytesRefBuilder secretIngredientForForJavaString = new BytesRefBuilder();
 
 	public static IntsRef prepareLuceneString(String javaString) {
-		return Util.toIntsRef(new BytesRef(javaString), secretIngredientForLuceneString);
+		return Util.toIntsRef(
+			new BytesRef(javaString),
+			secretIngredientForLuceneString
+		);
 	}
 
 	public static String prepareJavaString(IntsRef luceneString) {
-		return Util.toBytesRef(luceneString, secretIngredientForForJavaString).utf8ToString();
+		return Util.toBytesRef(
+			luceneString,
+			secretIngredientForForJavaString
+		).utf8ToString();
 	}
 }
