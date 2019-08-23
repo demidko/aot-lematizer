@@ -1,9 +1,10 @@
 package com.farpost.aot;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.lang.System.out;
@@ -11,25 +12,27 @@ import static java.lang.System.out;
 public final class Compiler {
 
 	public static void main(String[] args) throws IOException {
-		if (new File(args[0]).exists()) {
+		var mrdPath = args[0] + "MRD.BIN";
+		if (new File(mrdPath).exists()) {
 			out.println("Mrd-file already compiled to " + args[0]);
 			return;
 		}
 		out.println("Reading...");
 		var zippedLemmas = Zip.zip(LemmasReader.readLemmas());
 		out.println("Compilation [1..4]");
-		try (var file = new DataOutputStream(new FileOutputStream(args[0]))) {
+		try (var file = new DataOutputStream(new FileOutputStream(mrdPath))) {
 			out.println("1. Morphology (" + zippedLemmas.getMorph().size() + ")");
 			compileMorphology(file, zippedLemmas.getMorph());
 			out.println("2. Strings (" + zippedLemmas.getStrings().size() + ")");
 			compileStrings(file, zippedLemmas.getStrings());
 			out.println("3. Lemma indexes (" + zippedLemmas.getLemmas().size() + ")");
 			compileLemmas(file, zippedLemmas.getLemmas());
-			var hashes = Hashes.calculate(zippedLemmas);
-			out.println("4. Flexion hashes (" + hashes.size() + ")");
-			compileHashes(file, hashes);
 		}
-		out.println("Mrd-file successfully compiled to " + args[0]);
+		out.println("Mrd-file successfully compiled to " + mrdPath);
+		var fstPath = Paths.get(args[0] + "FST.BIN");
+		out.println("FST compilation...");
+		compileRefsToLemmas(zippedLemmas, fstPath);
+		out.println("FST successfully compiled to " + fstPath);
 	}
 
 	// 1
@@ -62,7 +65,7 @@ public final class Compiler {
 	}
 
 	private static byte byteFromChar(char n) {
-		return n == '\n' ? Bytecode.endOfCompiledLine : Utils.safeCharToByte(n);
+		return n == '\n' ? Bytecode.endOfCompiledLine : FarpostAotUtils.safeCharToByte(n);
 	}
 
 	// 2
@@ -113,30 +116,14 @@ public final class Compiler {
 	}
 
 	// 4
-	private static void compileHashes(DataOutputStream file, Map<Integer, Set<Integer>> hashes) throws IOException {
-		file.writeInt(hashes.size());
-
-		int sizeInBytes = 0;
-		for (var pair : hashes.entrySet()) {
-			// хеш
-			sizeInBytes += 4;
-			// кол-во индексов
-			sizeInBytes += 4;
-			// сами индексы
-			sizeInBytes += (pair.getValue().size() * 4);
-		}
-		file.writeInt(sizeInBytes);
-
-		for (var pair : hashes.entrySet()) {
-			// хеш
-			file.writeInt(pair.getKey());
-			// кол-во индексов
-			file.writeInt(pair.getValue().size());
-			// индексы
-			for (var index : pair.getValue()) {
-				file.writeInt(index);
+	private static void compileRefsToLemmas(ZipResult zippedLemmas, Path path) throws IOException {
+		var fstBuilder = new StringFstBuilder();
+		for (int i = 0; i < zippedLemmas.getLemmas().size(); ++i) {
+			var currLemma = zippedLemmas.getLemmas().get(i);
+			for (var flexion : currLemma) {
+				fstBuilder.add(zippedLemmas.getStrings().get(flexion.getStringIndex()), i);
 			}
-
 		}
+		fstBuilder.finish().save(path);
 	}
 }

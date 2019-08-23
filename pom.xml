@@ -43,6 +43,11 @@
 			<version>2.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>8.2.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

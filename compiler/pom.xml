@@ -32,7 +32,7 @@
 						<configuration>
 							<mainClass>com.farpost.aot.Compiler</mainClass>
 							<arguments>
-								<argument>${project.parent.basedir}/lematizer/src/main/resources/MRD.BIN</argument>
+								<argument>${project.parent.basedir}/lematizer/src/main/resources/</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -45,7 +45,7 @@
 						<configuration>
 							<mainClass>com.farpost.aot.Compiler</mainClass>
 							<arguments>
-								<argument>${project.parent.basedir}/lematizer/src/main/resources/MRD.BIN</argument>
+								<argument>${project.parent.basedir}/lematizer/src/main/resources/</argument>
 							</arguments>
 						</configuration>
 					</execution>

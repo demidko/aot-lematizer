@@ -48,11 +48,11 @@ public class LookupBenchmark {
 	@State(Benchmark)
 	public static class Holder {
 
-		HashDictionary storage;
+		FstDictionary storage;
 
 		public Holder() {
 			try {
-				storage = new HashDictionary();
+				storage = new FstDictionary();
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}

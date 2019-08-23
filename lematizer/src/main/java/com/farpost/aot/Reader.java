@@ -1,7 +1,11 @@
 package com.farpost.aot;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.lucene.store.InputStreamDataInput;
+import org.apache.lucene.util.fst.FST;
+import org.apache.lucene.util.fst.PositiveIntOutputs;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 class Reader {
 
@@ -32,7 +36,7 @@ class Reader {
 			}
 			char[] buf = new char[to - pos];
 			for (int j = 0; j < buf.length; ++j, ++pos) {
-				buf[j] = Utils.safeByteToChar(block.getBytes()[pos]);
+				buf[j] = FarpostAotUtils.safeByteToChar(block.getBytes()[pos]);
 			}
 			++pos;
 			result[i] = new String(buf);
@@ -54,19 +58,11 @@ class Reader {
 		return result;
 	}
 
-	static Map<Integer, int[]> readRefs(ByteBlock block) {
-		Map<Integer, int[]> result = new HashMap<>();
-		for (int i = 0, pos = 0; i < block.getLinesCount(); ++i) {
-			int wordHash = intFromByteArray(block.getBytes(), pos);
-			pos += 4;
-			int[] indexes = new int[intFromByteArray(block.getBytes(), pos)];
-			pos += 4;
-			for (int j = 0; j < indexes.length; ++j, pos += 4) {
-				indexes[j] = intFromByteArray(block.getBytes(), pos);
-			}
-			result.put(wordHash, indexes);
-		}
-		return result;
+	static FST<Long> readRefs(InputStream stream) throws IOException {
+		return new FST<Long>(
+			new InputStreamDataInput(stream),
+			PositiveIntOutputs.getSingleton()
+		);
 	}
 
 	private static int intFromByteArray(byte[] arr, int from) {

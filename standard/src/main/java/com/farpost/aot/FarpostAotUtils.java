@@ -1,6 +1,6 @@
 package com.farpost.aot;
 
-class Utils {
+class FarpostAotUtils {
 
 	public static char safeByteToChar(byte b) {
 		char c = byteToChar(b);

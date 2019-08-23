@@ -8,7 +8,7 @@ import static java.util.Arrays.asList;
 public class Flexion {
 
 	// оптимизация
-	static HashDictionary db;
+	static FstDictionary db;
 
 	private final int strIndex, tagsIndex;
 	private final PartOfSpeech pos;

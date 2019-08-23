@@ -9,11 +9,11 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class HashDictionaryTest {
+public class FstDictionaryTest {
 
-	private final HashDictionary d = new HashDictionary();
+	private final FstDictionary d = new FstDictionary();
 
-	public HashDictionaryTest() throws IOException {
+	public FstDictionaryTest() throws IOException {
 	}
 
 	@Test

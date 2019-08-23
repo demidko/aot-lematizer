@@ -10,7 +10,7 @@ import static java.lang.Thread.currentThread;
 public class TestApplication {
 
 	public static void main(String[] args) throws IOException {
-		var dict = new HashDictionary();
+		var dict = new FstDictionary();
 		try (var console = new BufferedReader(new InputStreamReader(System.in))) {
 			while (!currentThread().isInterrupted()) {
 				var res = dict.lookup(console.readLine());
