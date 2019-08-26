@@ -1,13 +1,6 @@
 package com.farpost.aot;
 
-import org.apache.lucene.store.InputStreamDataInput;
-import org.apache.lucene.util.fst.FST;
-import org.apache.lucene.util.fst.PositiveIntOutputs;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-class Reader {
+class MrdReader {
 
 	static MorphologyTag[][] readMorph(ByteBlock block) {
 		MorphologyTag[][] result = new MorphologyTag[block.getLinesCount()][];
@@ -56,13 +49,6 @@ class Reader {
 			}
 		}
 		return result;
-	}
-
-	static FST<Long> readRefs(InputStream stream) throws IOException {
-		return new FST<Long>(
-			new InputStreamDataInput(stream),
-			PositiveIntOutputs.getSingleton()
-		);
 	}
 
 	private static int intFromByteArray(byte[] arr, int from) {

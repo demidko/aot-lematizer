@@ -8,3 +8,4 @@
 /testapp/pom.xml.versionsBackup
 /benchmark/pom.xml.versionsBackup
 /lematizer/pom.xml.versionsBackup
+/lematizer/src/main/resources/FST.BIN

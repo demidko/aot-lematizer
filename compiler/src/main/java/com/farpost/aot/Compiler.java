@@ -1,7 +1,8 @@
 package com.farpost.aot;
 
+import org.apache.lucene.util.fst.Util;
+
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +15,7 @@ public final class Compiler {
 	public static void main(String[] args) throws IOException {
 		var mrdPath = args[0] + "MRD.BIN";
 		if (new File(mrdPath).exists()) {
-			out.println("Mrd-file already compiled to " + args[0]);
+			out.println("Mrd-file already compiled to " + mrdPath);
 			return;
 		}
 		out.println("Reading...");
@@ -29,10 +30,11 @@ public final class Compiler {
 			compileLemmas(file, zippedLemmas.getLemmas());
 		}
 		out.println("Mrd-file successfully compiled to " + mrdPath);
-		var fstPath = Paths.get(args[0] + "FST.BIN");
-		out.println("FST compilation...");
+
+		var fstPath = args[0] + "FST.BIN";
+		out.println("4. Fst compilation...");
 		compileRefsToLemmas(zippedLemmas, fstPath);
-		out.println("FST successfully compiled to " + fstPath);
+		out.println("Fst-file successfully compiled to " + fstPath);
 	}
 
 	// 1
@@ -116,14 +118,22 @@ public final class Compiler {
 	}
 
 	// 4
-	private static void compileRefsToLemmas(ZipResult zippedLemmas, Path path) throws IOException {
-		var fstBuilder = new StringFstBuilder();
+	private static void compileRefsToLemmas(ZipResult zippedLemmas, String strPath) throws IOException {
+		var fstBuilder = new FstMapBuilder();
 		for (int i = 0; i < zippedLemmas.getLemmas().size(); ++i) {
 			var currLemma = zippedLemmas.getLemmas().get(i);
 			for (var flexion : currLemma) {
 				fstBuilder.add(zippedLemmas.getStrings().get(flexion.getStringIndex()), i);
 			}
 		}
-		fstBuilder.finish().save(path);
+
+		var res = fstBuilder.finish();
+
+		out.println("!! [IntegrationTest] Пытаемся получить слово 'ящур' из FST...");
+		out.println(Arrays.toString(Util.get(res, CreateIntsRef.fromString("ящур")).ints));
+
+		res.save(Paths.get(strPath));
+
+
 	}
 }

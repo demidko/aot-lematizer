@@ -3,17 +3,19 @@ package com.farpost.aot;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class FstDictionaryTest {
+public class MorphologyTest {
 
-	private final FstDictionary d = new FstDictionary();
+	private final Morphology d = new Morphology();
 
-	public FstDictionaryTest() throws IOException {
+	public MorphologyTest() throws IOException {
 	}
 
 	@Test
@@ -32,15 +34,17 @@ public class FstDictionaryTest {
 	public void dictionaryShouldNotFindNotRealWords() throws IOException {
 		assertThat(d.lookup("фентифлюшка"), hasSize(0));
 		// low level
-		assertThat(d.lookupForLemmasIds("фентифлюшка"), hasSize(0));
+		assertThat(d.lookupForLemmasIds("фентифлюшка").length, equalTo(0));
 	}
 
-	private List<String> collectNormsLowLevel(List<Integer> ids) {
-		return ids.stream().map(d::getLemmaString).collect(toList());
+	private List<String> collectNormsLowLevel(int[] ids) {
+		List<String> res = new ArrayList<>();
+		Arrays.stream(ids).forEach(x -> res.add(d.getLemmaString(x)));
+		return res;
 	}
 
 	@Test
-	public void lowerCaseWorkingCorrectly() {
+	public void lowerCaseWorkingCorrectly() throws IOException {
 		List<String> lemmas = d
 			.lookup("Германия")
 			.stream()
@@ -62,17 +66,17 @@ public class FstDictionaryTest {
 		assertThat(d.lookup("дети"), hasSize(1));
 
 		//low level
-		assertThat(d.lookupForLemmasIds("человек"), hasSize(1));
-		assertThat(d.lookupForLemmasIds("люди"), hasSize(1));
-		assertThat(d.lookupForLemmasIds("ребёнок"), hasSize(1));
-		assertThat(d.lookupForLemmasIds("дети"), hasSize(1));
+		assertThat(d.lookupForLemmasIds("человек").length, equalTo(1));
+		assertThat(d.lookupForLemmasIds("люди").length, equalTo(1));
+		assertThat(d.lookupForLemmasIds("ребёнок").length, equalTo(1));
+		assertThat(d.lookupForLemmasIds("дети").length, equalTo(1));
 	}
 
 	@Test
 	public void shouldNotThrowExceptionIfWordHasUnknownCharacter() throws IOException {
 		assertThat(d.lookup("super#starnge@string"), hasSize(0));
 		//low level
-		assertThat(d.lookupForLemmasIds("super#starnge@string"), hasSize(0));
+		assertThat(d.lookupForLemmasIds("super#starnge@string").length, equalTo(0));
 	}
 
 
@@ -94,7 +98,7 @@ public class FstDictionaryTest {
 	}
 
 	@Test
-	public void regression1() {
+	public void regression1() throws IOException {
 		assertThat(collectNorms(d.lookup("замок")), hasItems("замок", "замокнуть"));
 
 		//low level
@@ -102,10 +106,10 @@ public class FstDictionaryTest {
 	}
 
 	@Test
-	public void regression3() {
+	public void regression3() throws IOException {
 		assertThat(d.lookup("и"), hasSize(2));
 		// low level
-		assertThat(d.lookupForLemmasIds("и"), hasSize(2));
+		assertThat(d.lookupForLemmasIds("и").length, equalTo(2));
 	}
 
 

@@ -1,51 +1,40 @@
 package com.farpost.aot;
 
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.fst.FST;
-import org.apache.lucene.util.fst.Util;
-
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 
-public class FstDictionary {
+public class Morphology {
 
 	final MorphologyTag[][] allMorphologyTags;
 	final String[] allFlexionStrings;
 
 	private final int[][] lemmas;
-	private final FST<Long> refs;
+	private final FstMap lemmasMap;
 
-	public FstDictionary() throws IOException {
+	public Morphology() throws IOException {
 		try (DataInputStream file = new DataInputStream(getClass().getResourceAsStream("/MRD.BIN"))) {
-			allMorphologyTags = Reader.readMorph(ByteBlock.readBlockFrom(file));
-			allFlexionStrings = Reader.readStrings(ByteBlock.readBlockFrom(file));
-			lemmas = Reader.readLemmas(ByteBlock.readBlockFrom(file));
+			allMorphologyTags = MrdReader.readMorph(ByteBlock.readBlockFrom(file));
+			allFlexionStrings = MrdReader.readStrings(ByteBlock.readBlockFrom(file));
+			lemmas = MrdReader.readLemmas(ByteBlock.readBlockFrom(file));
 		}
-		refs = Reader.readRefs(getClass().getResourceAsStream("FST.BIN"));
+		lemmasMap = FstMap.readFromResources();
 		Flexion.db = this;
 	}
-
 
 	///               ***                    ///
 	/// Здесь начинается высокоуровневое API ///
 	///               ***                    ///
 
-	private List<Word> collectLemmas(int[] refs, String query) {
+	public List<Word> lookup(String query) throws IOException {
+		int[] refs = lemmasMap.get(query.toLowerCase().replace('ё', 'е'));
 		Word[] res = new Word[refs.length];
 		for (int i = 0; i < res.length; ++i) {
 			res[i] = new Word(lemmas[refs[i]]);
 		}
 		return asList(res);
-	}
-
-	public List<Word> lookup(String query) throws IOException {
-		Long refsToLemmas = Util.get(refs, new BytesRef(query.toLowerCase().replace('ё', 'е')))
-		return refsToLemmas == null ? emptyList() : collectLemmas(refsToLemmas, query);
 	}
 
 	///                  ***                        ///
@@ -94,23 +83,12 @@ public class FstDictionary {
 		return allMorphologyTags[lemmas[lemmaId][flexionIndex * 2 + 1]];
 	}
 
+
 	/**
 	 * @param query слово для поиска по нему
 	 * @return набор идентификаторов лемм (исходных форм слова)
 	 */
-	public List<Integer> lookupForLemmasIds(String query) {
-		query = query.toLowerCase().replace('ё', 'е');
-		int[] ids = refs.get(query.hashCode());
-		return ids == null ? emptyList() : filterLemmasIds(ids, query);
-	}
-
-	private List<Integer> filterLemmasIds(int[] refs, String query) {
-		List<Integer> res = new ArrayList<>();
-		for (int ref : refs) {
-			if (!isCollision(lemmas[ref], query)) {
-				res.add(ref);
-			}
-		}
-		return res;
+	public int[] lookupForLemmasIds(String query) throws IOException {
+		return lemmasMap.get(query.toLowerCase().replace('ё', 'е'));
 	}
 }

@@ -37,7 +37,7 @@ public class LookupBenchmark {
 	}
 
 	@Benchmark
-	public void lookup(WordList list, Holder holder) {
+	public void lookup(WordList list, Holder holder) throws IOException {
 		//holder.storage.lookup(list.nextWord);
 		for (int i : holder.storage.lookupForLemmasIds(list.nextWord)) {
 			String l = holder.storage.getLemmaString(i);
@@ -48,11 +48,11 @@ public class LookupBenchmark {
 	@State(Benchmark)
 	public static class Holder {
 
-		FstDictionary storage;
+		Morphology storage;
 
 		public Holder() {
 			try {
-				storage = new FstDictionary();
+				storage = new Morphology();
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
